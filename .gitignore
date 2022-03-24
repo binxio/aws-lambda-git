@@ -1,0 +1,5 @@
+git_client/bin
+git_client/lib
+libraries.zip
+.aws-sam
+.pytest_cache

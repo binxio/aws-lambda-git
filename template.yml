@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  GitClient:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 60
+      MemorySize: 128
+      Handler: index.handler
+      Runtime: python3.8
+      CodeUri: git_client
