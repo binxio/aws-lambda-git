@@ -1,5 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
+Parameters:
+
+  TargetAccountId:
+    Description: The Account ID that will be used as the target for the sync action.
+    Type: String
+
 Resources:
   GitClient:
     Type: AWS::Serverless::Function
@@ -9,3 +15,27 @@ Resources:
       Handler: index.handler
       Runtime: python3.8
       CodeUri: git_client
+      Events:
+        PullRequestMerge:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "aws.codecommit"
+              destinationReference:
+                - "refs/heads/development"
+              isMerged:
+                - "True"
+      Policies:
+        - AWSLambdaExecute
+        - Version: 2012-10-17
+          Statement:
+            - Action: ["codecommit:GitPull"]
+              Effect: Allow
+              Resource: !Sub arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:*
+            - Action: ["sts:AssumeRole"]
+              Effect: Allow
+              Resource: !Sub arn:aws:iam::${TargetAccountId}:role/CodeCommitSyncRole
+      Environment:
+        Variables:
+          TARGET_ROLE_ARN: !Sub arn:aws:iam::${TargetAccountId}:role/CodeCommitSyncRole

@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+
+  SourceAccountId:
+    Description: The Account ID that will be used as source account.
+    Type: String
+
+Resources:
+  CodeCommitSyncRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodeCommitSyncRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Condition:
+              ArnLike:
+                aws:PrincipalARN: arn:aws:iam::*:role/GitClient*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${SourceAccountId}:root
+      Policies:
+        - PolicyName: AllowSyncFromLiveOrg
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action: codecommit:GitPush
+                Effect: Allow
+                Resource: !Sub arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:*
